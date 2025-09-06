@@ -1,512 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tune Smith - Music Player</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #1a1c29, #232635);
-            color: #e6e6e6;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .container {
-            width: 100%;
-            max-width: 1000px;
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-        
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #3a3c4d;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .logo i {
-            font-size: 28px;
-            color: #6c5ce7;
-        }
-        
-        .logo h1 {
-            font-weight: 600;
-            font-size: 24px;
-        }
-        
-        .player-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-        
-        @media (max-width: 768px) {
-            .player-container {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .now-playing {
-            background: #2a2d3c;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-        
-        .album-art {
-            width: 280px;
-            height: 280px;
-            margin: 0 auto 30px;
-            border-radius: 12px;
-            overflow: hidden;
-            background: #3a3c4d;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-        }
-        
-        .album-art i {
-            font-size: 80px;
-            color: #4a4d61;
-        }
-        
-        .album-art img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .track-info {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .track-info h2 {
-            font-size: 24px;
-            margin-bottom: 8px;
-            color: #fff;
-        }
-        
-        .track-info p {
-            color: #a2a3aa;
-            margin-bottom: 5px;
-        }
-        
-        .progress-container {
-            margin-bottom: 25px;
-        }
-        
-        .progress-bar {
-            height: 5px;
-            background: #3a3c4d;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            position: relative;
-        }
-        
-        .progress {
-            height: 100%;
-            width: 0%;
-            background: #6c5ce7;
-            border-radius: 5px;
-            transition: width 0.1s ease;
-        }
-        
-        .time {
-            display: flex;
-            justify-content: space-between;
-            color: #a2a3aa;
-            font-size: 14px;
-        }
-        
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-        
-        .controls button {
-            border: none;
-            background: none;
-            color: #e6e6e6;
-            font-size: 20px;
-            cursor: pointer;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-        }
-        
-        .controls button:hover {
-            background: #3a3c4d;
-        }
-        
-        .controls .play-pause {
-            width: 60px;
-            height: 60px;
-            background: #6c5ce7;
-        }
-        
-        .controls .play-pause:hover {
-            background: #5d4acb;
-            transform: scale(1.05);
-        }
-        
-        .volume-control {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background: #3a3c4d;
-            padding: 10px 15px;
-            border-radius: 30px;
-        }
-        
-        .volume-control i {
-            color: #a2a3aa;
-        }
-        
-        .volume-slider {
-            flex: 1;
-            appearance: none;
-            -webkit-appearance: none;
-            height: 4px;
-            background: #4a4d61;
-            border-radius: 2px;
-            outline: none;
-        }
-        
-        .volume-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #e6e6e6;
-            cursor: pointer;
-        }
-        
-        .library {
-            background: #2a2d3c;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-        
-        .library h2 {
-            font-size: 20px;
-            margin-bottom: 25px;
-            color: #fff;
-        }
-        
-        .add-music {
-            background: #3a3c4d;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 30px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .add-music:hover {
-            background: #414355;
-        }
-        
-        .add-music-content {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .add-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: #6c5ce7;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-        
-        .add-text h3 {
-            font-size: 18px;
-            margin-bottom: 5px;
-            color: #fff;
-        }
-        
-        .add-text p {
-            color: #a2a3aa;
-            font-size: 14px;
-        }
-        
-        .playlist {
-            margin-top: 30px;
-        }
-        
-        .playlist-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .playlist-header h3 {
-            font-size: 18px;
-            color: #fff;
-        }
-        
-        .playlist-count {
-            color: #a2a3aa;
-            font-size: 14px;
-        }
-        
-        .empty-playlist {
-            text-align: center;
-            padding: 40px 0;
-            color: #a2a3aa;
-        }
-        
-        .empty-playlist i {
-            font-size: 40px;
-            margin-bottom: 15px;
-            color: #4a4d61;
-        }
-        
-        .empty-playlist p {
-            margin-bottom: 20px;
-        }
-        
-        .upload-btn {
-            background: #6c5ce7;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-        
-        .upload-btn:hover {
-            background: #5d4acb;
-        }
-        
-        .playlist-items {
-            list-style: none;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .playlist-items li {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            background: #3a3c4d;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-        
-        .playlist-items li:hover {
-            background: #414355;
-        }
-        
-        .playlist-items li.playing {
-            background: #6c5ce720;
-            border-left: 3px solid #6c5ce7;
-        }
-        
-        .item-img {
-            width: 50px;
-            height: 50px;
-            border-radius: 8px;
-            background: #4a4d61;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .item-img i {
-            color: #a2a3aa;
-        }
-        
-        .item-info {
-            flex: 1;
-        }
-        
-        .item-info h4 {
-            color: #fff;
-            margin-bottom: 5px;
-            font-size: 16px;
-        }
-        
-        .item-info p {
-            color: #a2a3aa;
-            font-size: 14px;
-        }
-        
-        .item-duration {
-            color: #a2a3aa;
-            font-size: 14px;
-            margin-right: 30px;
-        }
-        
-        .remove-btn {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #a2a3aa;
-            cursor: pointer;
-            font-size: 16px;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-        
-        .playlist-items li:hover .remove-btn {
-            opacity: 1;
-        }
-        
-        .remove-btn:hover {
-            color: #ff6b6b;
-        }
-        
-        input[type="file"] {
-            display: none;
-        }
-        
-        footer {
-            text-align: center;
-            padding-top: 20px;
-            color: #a2a3aa;
-            font-size: 14px;
-            border-top: 1px solid #3a3c4d;
-        }
-        
-        footer a {
-            color: #6c5ce7;
-            text-decoration: none;
-        }
-    </style>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sangiiit - Music Player</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
     <div class="container">
-        <header>
-            <div class="logo">
-                <i class="fas fa-music"></i>
-                <h1>Tune Smith</h1>
-            </div>
-        </header>
-        
-        <div class="player-container">
-            <div class="now-playing">
-                <div class="album-art">
-                    <i class="fas fa-music"></i>
-                </div>
-                
-                <div class="track-info">
-                    <h2 id="title">No Track Selected</h2>
-                    <p id="artist">Unknown Artist</p>
-                    <p>Album: <span id="album">—</span></p>
-                </div>
-                
-                <div class="progress-container">
-                    <div class="progress-bar" id="progress-bar">
-                        <div class="progress" id="progress"></div>
-                    </div>
-                    <div class="time">
-                        <span id="current-time">0:00</span>
-                        <span id="duration">0:00</span>
-                    </div>
-                </div>
-                
-                <div class="controls">
-                    <button id="prev"><i class="fas fa-step-backward"></i></button>
-                    <button id="play-pause" class="play-pause"><i class="fas fa-play"></i></button>
-                    <button id="next"><i class="fas fa-step-forward"></i></button>
-                </div>
-                
-                <div class="volume-control">
-                    <i class="fas fa-volume-up"></i>
-                    <input type="range" class="volume-slider" id="volume" min="0" max="1" step="0.01" value="1">
-                </div>
-            </div>
-            
-            <div class="library">
-                <h2>Library</h2>
-                
-                <div class="add-music" id="add-music-btn">
-                    <div class="add-music-content">
-                        <div class="add-icon">
-                            <i class="fas fa-plus"></i>
-                        </div>
-                        <div class="add-text">
-                            <h3>Add Songs</h3>
-                            <p>Upload music files from your device</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="playlist">
-                    <div class="playlist-header">
-                        <h3>Playlist</h3>
-                        <span class="playlist-count"><span id="song-count">0</span> songs</span>
-                    </div>
-                    
-                    <div class="empty-playlist" id="empty-playlist">
-                        <i class="fas fa-music"></i>
-                        <p>Your playlist is empty</p>
-                        <p>Upload some music files to get started</p>
-                    </div>
-                    
-                    <ul class="playlist-items" id="playlist">
-                        <!-- Playlist items will be added here dynamically -->
-                    </ul>
-                </div>
-                
-                <input type="file" id="file-input" accept="audio/*" multiple>
-            </div>
+      <header>
+        <div class="logo">
+          <i class="fas fa-music"></i>
+          <h1>Sangiiit</h1>
         </div>
-        
-        <footer>
-            <p>Created by Mohit <i class="fas fa-heart" style="color: #e74c3c;"></i> | </p>
-        </footer>
+      </header>
+
+      <div class="player-container">
+        <div class="now-playing">
+          <div class="album-art">
+            <i class="fas fa-music"></i>
+            <img id="cover-img" src="" alt="Album Cover" />
+          </div>
+
+          <div class="track-info">
+            <h2 id="title">No Track Selected</h2>
+            <p id="artist">Unknown Artist</p>
+            <p>Album: <span id="album">—</span></p>
+          </div>
+
+          <div class="progress-container">
+            <div class="progress-bar" id="progress-bar">
+              <div class="progress" id="progress"></div>
+            </div>
+            <div class="time">
+              <span id="current-time">0:00</span>
+              <span id="duration">0:00</span>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button id="prev"><i class="fas fa-step-backward"></i></button>
+            <button id="play-pause" class="play-pause">
+              <i class="fas fa-play"></i>
+            </button>
+            <button id="next"><i class="fas fa-step-forward"></i></button>
+          </div>
+
+          <div class="volume-control">
+            <i class="fas fa-volume-up" id="volume-icon"></i>
+            <input
+              type="range"
+              class="volume-slider"
+              id="volume"
+              min="0"
+              max="1"
+              step="0.01"
+              value="0.7"
+            />
+            <span class="volume-percent" id="volume-percent">70%</span>
+          </div>
+        </div>
+
+        <div class="library">
+          <h2>Library</h2>
+
+          <div class="add-music" id="add-music-btn">
+            <div class="add-music-content">
+              <div class="add-icon">
+                <i class="fas fa-plus"></i>
+              </div>
+              <div class="add-text">
+                <h3>Add Songs</h3>
+                <p>Upload music files from your device</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="playlist">
+            <div class="playlist-header">
+              <h3>Playlist</h3>
+              <span class="playlist-count"
+                ><span id="song-count">0</span> songs</span
+              >
+            </div>
+
+            <div class="empty-playlist" id="empty-playlist">
+              <i class="fas fa-music"></i>
+              <p>Your playlist is empty</p>
+              <p>Upload some music files to get started</p>
+              <button class="upload-btn" id="upload-btn-main">
+                Upload Music
+              </button>
+            </div>
+
+            <ul class="playlist-items" id="playlist">
+              <!-- Playlist items will be added here dynamically -->
+            </ul>
+          </div>
+
+          <input type="file" id="file-input" accept="audio/*" multiple />
+        </div>
+      </div>
+
+      <footer>
+        <p>
+          Created by Mohit <i class="fas fa-heart" style="color: #e74c3c"></i>
+        </p>
+      </footer>
     </div>
 
-    <audio id="audio"></audio>
-    
-    <script src="script.js"></script>
+    <div class="toast" id="toast"></div>
 
-</body>
+    <audio id="audio"></audio>
+
+    <script src="script.js"></script>
+  </body>
 </html>
