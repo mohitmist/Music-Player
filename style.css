@@ -12,17 +12,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  overflow: hidden;
+  padding: 15px;
+  overflow: auto;
 }
 
 .container {
   width: 100%;
   max-width: 1000px;
-  max-height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 35px;
+  gap: 20px;
 }
 
 header {
@@ -54,26 +53,17 @@ header {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
-  height: calc(100vh - 180px);
-}
-
-@media (max-width: 768px) {
-  .player-container {
-    grid-template-columns: 1fr;
-    height: auto;
-  }
 }
 
 .now-playing {
   background: #2a2d3c;
   border-radius: 16px;
   padding: 20px;
-  margin-bottom: -22px;
-  margin-top: -22px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
 
 .rgb-lights {
@@ -110,8 +100,8 @@ header {
 }
 
 .album-art {
-  width: 220px;
-  height: 220px;
+  width: 200px;
+  height: 200px;
   margin: 0 auto 20px;
   border-radius: 12px;
   overflow: hidden;
@@ -122,7 +112,6 @@ header {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
   border: 2px solid rgba(255, 255, 255, 0.1);
   position: relative;
-  animation: border-pulse 3s infinite linear;
 }
 
 .album-art::after {
@@ -151,7 +140,7 @@ header {
 }
 
 .album-art i {
-  font-size: 70px;
+  font-size: 60px;
   color: #b4cfbd;
 }
 
@@ -168,7 +157,7 @@ header {
 }
 
 .track-info h2 {
-  font-size: 15px;
+  font-size: 18px;
   margin-bottom: 5px;
   color: #fff;
   white-space: nowrap;
@@ -178,7 +167,7 @@ header {
 }
 
 .track-info p {
-  font-size: 15px;
+  font-size: 14px;
   color: #a2a3aa;
   margin-bottom: 2px;
   white-space: nowrap;
@@ -188,9 +177,7 @@ header {
 }
 
 .progress-container {
-  margin-top: 1px;
-  align-items: center;
-  margin-bottom: -20px;
+  margin-bottom: 20px;
 }
 
 .progress-bar {
@@ -223,15 +210,14 @@ header {
   display: flex;
   justify-content: center;
   gap: 15px;
-  margin-bottom: 8px;
-  margin-top: 9px;
+  margin-bottom: 20px;
 }
 
 .controls button {
   border: none;
   background: rgba(58, 60, 77, 0.7);
   color: #e6e6e6;
-  font-size: 18px;
+  font-size: 16px;
   cursor: pointer;
   width: 45px;
   height: 45px;
@@ -270,8 +256,6 @@ header {
   background: rgba(58, 60, 77, 0.7);
   padding: 8px 12px;
   border-radius: 30px;
-  margin-top: 4px;
-  margin-bottom: -10px;
   backdrop-filter: blur(5px);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -309,8 +293,6 @@ header {
 .library {
   background: rgba(42, 45, 60, 0.7);
   border-radius: 16px;
-  margin-top: -22px;
-  margin-bottom: -22px;
   padding: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   display: flex;
@@ -553,7 +535,7 @@ input[type="file"] {
 
 footer {
   text-align: center;
-  padding-top: 10px;
+  padding-top: 15px;
   color: #a2a3aa;
   font-size: 14px;
   border-top: 1px solid #2a2a3a;
@@ -583,4 +565,137 @@ footer a {
 
 .toast.show {
   opacity: 1;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+    overflow: auto;
+  }
+
+  .container {
+    gap: 15px;
+  }
+
+  .player-container {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .now-playing,
+  .library {
+    margin: 0;
+    padding: 15px;
+  }
+
+  .album-art {
+    width: 180px;
+    height: 180px;
+    margin: 0 auto 15px;
+  }
+
+  .album-art i {
+    font-size: 50px;
+  }
+
+  .track-info h2 {
+    font-size: 16px;
+  }
+
+  .track-info p {
+    font-size: 13px;
+  }
+
+  .controls {
+    margin: 15px 0;
+  }
+
+  .volume-control {
+    margin: 0;
+  }
+
+  .library h2 {
+    font-size: 18px;
+  }
+
+  .add-music {
+    padding: 12px;
+  }
+
+  .add-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+
+  .playlist-header h3 {
+    font-size: 16px;
+  }
+
+  .playlist-items li {
+    padding: 10px;
+  }
+
+  .item-img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .item-info h4 {
+    font-size: 14px;
+  }
+
+  .item-duration {
+    font-size: 12px;
+    margin-right: 25px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo h1 {
+    font-size: 20px;
+  }
+
+  .album-art {
+    width: 150px;
+    height: 150px;
+  }
+
+  .controls button {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+  }
+
+  .controls .play-pause {
+    width: 45px;
+    height: 45px;
+  }
+
+  .volume-control {
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .add-music-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+
+  .playlist-items li {
+    flex-wrap: wrap;
+  }
+
+  .item-duration {
+    position: absolute;
+    right: 40px;
+    top: 10px;
+  }
+
+  .remove-btn {
+    top: 35px;
+  }
 }
