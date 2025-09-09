@@ -111,8 +111,8 @@ header {
   justify-content: center;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
   border: 2px solid rgba(255, 255, 255, 0.1);
-  animation: border-pulse 3s infinite linear;
   position: relative;
+  animation: border-pulse 3s infinite linear;
 }
 
 .album-art::after {

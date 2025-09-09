@@ -26,6 +26,7 @@ const toast = document.getElementById("toast");
 let songs = [];
 let currentSongIndex = 0;
 let isPlaying = false;
+let isLoading = false;
 
 // Initialize the player
 function initPlayer() {
@@ -68,9 +69,11 @@ function setupEventListeners() {
 
 // Handle file upload
 function handleFileUpload(e) {
-  addSongs(e.target.files);
-  fileInput.value = ""; // Reset input
-  showToast("Songs added to playlist");
+  const files = e.target.files;
+  if (files.length > 0) {
+    addSongs(files);
+    fileInput.value = ""; // Reset input
+  }
 }
 
 // Load song into player
@@ -199,14 +202,14 @@ function setVolume() {
   if (audio.volume == 0) {
     volumeIcon.classList.remove("fa-volume-up");
     volumeIcon.classList.remove("fa-volume-down");
-    volumeIcon.classList.add("fa-volume-off");
+    volumeIcon.classList.add("fa-volume-mute");
   } else if (audio.volume < 0.5) {
     volumeIcon.classList.remove("fa-volume-up");
-    volumeIcon.classList.remove("fa-volume-off");
+    volumeIcon.classList.remove("fa-volume-mute");
     volumeIcon.classList.add("fa-volume-down");
   } else {
     volumeIcon.classList.remove("fa-volume-down");
-    volumeIcon.classList.remove("fa-volume-off");
+    volumeIcon.classList.remove("fa-volume-mute");
     volumeIcon.classList.add("fa-volume-up");
   }
 }
@@ -316,6 +319,7 @@ function renderPlaylist() {
     li.addEventListener("click", () => {
       currentSongIndex = index;
       loadSong(currentSongIndex);
+      if (!isPlaying) playSong();
     });
 
     // Add event listener to remove button
@@ -330,30 +334,208 @@ function renderPlaylist() {
   updateSongCount();
 }
 
-// Add songs from local files
-function addSongs(files) {
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    if (file.type.startsWith("audio/")) {
+// Extract metadata from audio file
+function extractMetadata(file) {
+  return new Promise((resolve) => {
+    // Create a temporary audio element to get duration
+    const tempAudio = new Audio();
+    tempAudio.src = URL.createObjectURL(file);
+
+    tempAudio.addEventListener("loadedmetadata", function () {
+      const duration = tempAudio.duration;
+
+      // Try to read ID3 tags if it's an MP3 file
+      if (file.type === "audio/mpeg") {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const arrayBuffer = e.target.result;
+
+          // Simple ID3 tag parsing (basic implementation)
+          try {
+            const dataView = new DataView(arrayBuffer);
+            let offset = 0;
+
+            // Look for ID3 header
+            if (dataView.getUint32(offset) === 0x49443300) {
+              offset += 6; // Skip ID3 header
+
+              // Get tag size
+              const tagSize = dataView.getUint32(offset);
+              offset += 4;
+
+              let metadata = {
+                title: file.name.replace(/\.[^/.]+$/, ""),
+                artist: "Unknown Artist",
+                album: "Unknown Album",
+                cover: null,
+              };
+
+              // Try to find frames (simplified)
+              while (offset < tagSize + 10) {
+                const frameHeader = String.fromCharCode(
+                  dataView.getUint8(offset),
+                  dataView.getUint8(offset + 1),
+                  dataView.getUint8(offset + 2),
+                  dataView.getUint8(offset + 3)
+                );
+
+                const frameSize = dataView.getUint32(offset + 4);
+                offset += 10;
+
+                if (frameHeader === "TIT2") {
+                  // Title frame
+                  metadata.title = readStringFrame(dataView, offset, frameSize);
+                } else if (frameHeader === "TPE1") {
+                  // Artist frame
+                  metadata.artist = readStringFrame(
+                    dataView,
+                    offset,
+                    frameSize
+                  );
+                } else if (frameHeader === "TALB") {
+                  // Album frame
+                  metadata.album = readStringFrame(dataView, offset, frameSize);
+                } else if (frameHeader === "APIC") {
+                  // Picture frame (simplified)
+                  // Skip for now as it's complex to handle
+                }
+
+                offset += frameSize;
+              }
+
+              metadata.duration = duration;
+              resolve(metadata);
+            } else {
+              // No ID3 tags found
+              resolve({
+                title: file.name.replace(/\.[^/.]+$/, ""),
+                artist: "Unknown Artist",
+                album: "Unknown Album",
+                duration: duration,
+                cover: null,
+              });
+            }
+          } catch (error) {
+            console.error("Error parsing ID3 tags:", error);
+            resolve({
+              title: file.name.replace(/\.[^/.]+$/, ""),
+              artist: "Unknown Artist",
+              album: "Unknown Album",
+              duration: duration,
+              cover: null,
+            });
+          }
+        };
+        reader.readAsArrayBuffer(file.slice(0, 1024 * 10)); // Read first 10KB for ID3 tags
+      } else {
+        // For non-MP3 files, just get the duration
+        resolve({
+          title: file.name.replace(/\.[^/.]+$/, ""),
+          artist: "Unknown Artist",
+          album: "Unknown Album",
+          duration: duration,
+          cover: null,
+        });
+      }
+
+      URL.revokeObjectURL(tempAudio.src);
+    });
+
+    tempAudio.addEventListener("error", () => {
+      resolve({
+        title: file.name.replace(/\.[^/.]+$/, ""),
+        artist: "Unknown Artist",
+        album: "Unknown Album",
+        duration: 0,
+        cover: null,
+      });
+      URL.revokeObjectURL(tempAudio.src);
+    });
+  });
+}
+
+// Helper function to read string frames from ID3 tags
+function readStringFrame(dataView, offset, size) {
+  let text = "";
+  let encoding = dataView.getUint8(offset);
+  offset += 1;
+  size -= 1;
+
+  for (let i = 0; i < size; i++) {
+    const charCode = dataView.getUint8(offset + i);
+    if (charCode === 0) break; // Null terminator
+    text += String.fromCharCode(charCode);
+  }
+
+  return text;
+}
+
+// Add songs from local files with metadata extraction
+async function addSongs(files) {
+  if (isLoading) {
+    showToast("Please wait, songs are still processing");
+    return;
+  }
+
+  isLoading = true;
+  showToast("Processing audio files...");
+
+  const loadingIndicator = document.createElement("li");
+  loadingIndicator.className = "loading";
+  loadingIndicator.innerHTML =
+    '<div class="spinner"></div><span>Processing songs...</span>';
+  playlistEl.appendChild(loadingIndicator);
+
+  const audioFiles = Array.from(files).filter((file) =>
+    file.type.startsWith("audio/")
+  );
+
+  for (let i = 0; i < audioFiles.length; i++) {
+    const file = audioFiles[i];
+
+    try {
+      // Extract metadata
+      const metadata = await extractMetadata(file);
+
       const song = {
-        title: file.name.replace(/\.[^/.]+$/, ""), // Remove file extension
+        title: metadata.title,
+        artist: metadata.artist,
+        album: metadata.album,
+        src: URL.createObjectURL(file),
+        duration: formatTime(metadata.duration),
+        cover: metadata.cover,
+      };
+
+      songs.push(song);
+    } catch (error) {
+      console.error("Error processing file:", error);
+      // Add song with basic info if metadata extraction fails
+      const song = {
+        title: file.name.replace(/\.[^/.]+$/, ""),
         artist: "Unknown Artist",
         album: "Unknown Album",
         src: URL.createObjectURL(file),
         duration: "0:00",
+        cover: null,
       };
       songs.push(song);
     }
   }
+
+  // Remove loading indicator
+  playlistEl.removeChild(loadingIndicator);
 
   // Save to localStorage
   localStorage.setItem("tuneSmithSongs", JSON.stringify(songs));
   renderPlaylist();
 
   // If first song added, load it
-  if (songs.length === files.length) {
+  if (songs.length === audioFiles.length) {
     loadSong(0);
   }
+
+  showToast(`${audioFiles.length} song(s) added to playlist`);
+  isLoading = false;
 }
 
 // Show toast notification
